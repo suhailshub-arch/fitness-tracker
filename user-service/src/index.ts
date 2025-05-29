@@ -1,16 +1,17 @@
 import express, { Request, Response } from "express";
-import dotenv from "dotenv";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { Forbidden } from "./utils/ApiError.js";
-
-dotenv.config();
+import authRouter from "./routes/auth.js";
+import { PORT } from "./config/index.js";
 
 const app = express();
 app.use(express.json());
 
 app.get("/health", (req: Request, res: Response) => {
-  throw Forbidden('Testing Foridden Error')
+  res.status(200).json({ status: "ok" });
 });
+
+app.use('/api/auth', authRouter);
 
 // 404 for any routes not handled
 app.use((_req: Request, res: Response) => {
@@ -19,7 +20,7 @@ app.use((_req: Request, res: Response) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
+
 app.listen(PORT, () => {
   console.log(`Users service listening on port ${PORT}`);
 });
