@@ -21,7 +21,7 @@ app.use(errorHandler);
 
 
 app.listen(PORT, () => {
-  console.log(`Users service listening on port ${PORT}`);
+  console.log(`User service listening on port ${PORT}`);
 });
 
 export { app };
