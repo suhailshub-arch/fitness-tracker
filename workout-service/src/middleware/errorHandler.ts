@@ -1,6 +1,5 @@
-import { NextFunction, Request, Response } from "express";
+import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/ApiError.js";
-import type { ErrorRequestHandler } from "express";
 
 export const errorHandler: ErrorRequestHandler = (
   err: unknown,
@@ -17,5 +16,7 @@ export const errorHandler: ErrorRequestHandler = (
     return;
   }
 
-  res.status(500).json({ error: "Internal Server Error" });
+  res.status(500).json({
+    error: "Internal Server Error",
+  });
 };
