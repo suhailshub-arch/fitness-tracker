@@ -8,10 +8,24 @@ interface RegisterBody {
   name: string;
 }
 
+interface loginBody {
+  email: string;
+  password: string;
+}
+
 export async function registerController(req: Request, res: Response) {
   const { email, password, name } = req.body as RegisterBody;
   validateEmailPassword(email, password);
   const { user, token } = await userService.registerUser(email, password, name);
+  res.status(201).json({
+    success: true,
+    data: { user, token },
+  });
+}
+
+export async function loginController(req: Request, res: Response) {
+  const { email, password } = req.body as loginBody;
+  const { user, token } = await userService.loginUser(email, password);
   res.status(201).json({
     success: true,
     data: { user, token },

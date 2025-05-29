@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { Forbidden } from "./utils/ApiError.js";
 import authRouter from "./routes/auth.js";
 import { PORT } from "./config/index.js";
 
