@@ -23,10 +23,6 @@ describe("registerUser", () => {
   const password = "testingJest";
   const name = "Shub Testing Jest";
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it("throws Conflict if email already in use", async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 1,
@@ -80,5 +76,69 @@ describe("registerUser", () => {
       user: fakeUser,
       token: "jwt-token",
     });
+  });
+});
+
+describe("loginUser", () => {
+  const email = "shubJest@testing.com";
+  const password = "testingJest";
+
+  it("throws Unauthorized if no user exists wit thata email", async () => {
+    (prisma.user.findUnique as jest.Mock).mockReturnValue(null);
+
+    await expect(loginUser(email, password)).rejects.toThrow(
+      "Email or password is invalid"
+    );
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+  });
+
+  it("throws Unauthorized is the password does not match", async () => {
+    const foundUser = { id: 3, email, password: "hashed-password" };
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(foundUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+    await expect(loginUser(email, password)).rejects.toThrow(
+      "Email or password is invalid"
+    );
+    expect(bcrypt.compare).toHaveBeenCalledWith(password, foundUser.password);
+  });
+
+  it("returns a user and token on successful login", async () => {
+    const foundUser = { id: 3, email, password: "hashed-password" };
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(foundUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (jwt.sign as jest.Mock).mockReturnValue("jwt-token");
+
+    const result = await loginUser(email, password);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+    expect(bcrypt.compare).toHaveBeenCalledWith(password, foundUser.password);
+    expect(jwt.sign).toHaveBeenCalledWith(
+      { id: foundUser.id.toString() },
+      expect.any(String),
+      {
+        expiresIn: expect.any(Number),
+      }
+    );
+
+    expect(result).toEqual({ user: foundUser, token: "jwt-token" });
   });
 });
