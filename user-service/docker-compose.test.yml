@@ -1,0 +1,18 @@
+services:
+  postgres_test:
+    image: postgres:15
+    container_name: fitness_user_test_db
+    restart: always
+    env_file:
+      - .env.test
+    ports:
+      - 5433:5432
+    volumes:
+      - pgtestdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user"]
+      interval: 5s
+      retries: 5
+
+volumes:
+  pgtestdata:

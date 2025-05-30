@@ -26,7 +26,7 @@ export async function registerController(req: Request, res: Response) {
 export async function loginController(req: Request, res: Response) {
   const { email, password } = req.body as loginBody;
   const { user, token } = await userService.loginUser(email, password);
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     data: { user, token },
   });

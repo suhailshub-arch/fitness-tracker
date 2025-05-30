@@ -51,6 +51,7 @@ export async function loginUser(email: string, password: string) {
     select: {
       id: true,
       email: true,
+      name: true,
       password: true,
     },
   });

@@ -83,7 +83,7 @@ describe("loginUser", () => {
   const email = "shubJest@testing.com";
   const password = "testingJest";
 
-  it("throws Unauthorized if no user exists wit thata email", async () => {
+  it("throws Unauthorized if no user exists wit that email", async () => {
     (prisma.user.findUnique as jest.Mock).mockReturnValue(null);
 
     await expect(loginUser(email, password)).rejects.toThrow(
@@ -96,6 +96,7 @@ describe("loginUser", () => {
       select: {
         id: true,
         email: true,
+        name: true,
         password: true,
       },
     });
@@ -127,6 +128,7 @@ describe("loginUser", () => {
       select: {
         id: true,
         email: true,
+        name: true,
         password: true,
       },
     });

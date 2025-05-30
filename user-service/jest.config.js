@@ -16,6 +16,8 @@ export default {
     // strip the ".js" off any relative import before resolving
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
+  setupFiles: ["<rootDir>/tests/setupTestEnv.ts"],
+  roots: ["<rootDir>/tests", "<rootDir>/src"],
   clearMocks: true,
   forceExit: true,
   verbose: true,
