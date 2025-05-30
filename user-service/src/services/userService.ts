@@ -2,7 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import { Conflict, Unauthorized } from "../utils/ApiError.js";
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_SALT_ROUND } from "../config/index.js";
+import {
+  JWT_SECRET,
+  JWT_EXPIRES_IN,
+  BCRYPT_SALT_ROUND,
+} from "../config/index.js";
 
 const prisma = new PrismaClient();
 
