@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/index.ts",
-    "build": "NODE_ENV=production npm run prisma:generate && tsc",
-    "start": "NODE_ENV=production node dist/index.js",
+    "build": "cross-env NODE_ENV=production npm run prisma:generate && tsc",
+    "start": "cross-env NODE_ENV=production node dist/index.js",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:generate": "prisma generate",
     "test:unit": "jest",
