@@ -25,7 +25,6 @@ export const authJWTMiddleware = (
 
   const token = authHeader.split(" ")[1];
   const payload = jwt.verify(token, JWT_SECRET!) as MyJwtPayload;
-  console.log(payload);
   req.user = {
     userId: payload.id,
   };
