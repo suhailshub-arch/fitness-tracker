@@ -4,16 +4,21 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch src/index.ts",
-    "build": "NODE_ENV=production npm run prisma:generate && tsc",
+    "dev": "npm run db:seed && tsx --watch src/index.ts",
+    "build": "npm run prisma:generate && tsc",
     "start": "NODE_ENV=production node dist/index.js",
-    "prisma:migrate": "dotenv -e .env.development prisma migrate dev --name init",
     "prisma:generate": "prisma generate",
-    "test:unit": "jest",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
     "test:db": "docker-compose -f docker-compose.test.yml up -d",
     "test:db:down": "docker-compose -f docker-compose.test.yml down",
     "test:prepare": "dotenv -e .env.test -- cross-env NODE_ENV=test npx prisma db push",
+    "test:unit": "jest",
     "test:integration": "npm run test:db && npm run test:prepare && jest && npm run test:db:down"
+  },
+  "prisma": {
+    "seed": "npm run db:seed"
   },
   "keywords": [],
   "author": "",

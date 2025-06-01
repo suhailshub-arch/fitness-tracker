@@ -1,5 +1,6 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/ApiError.js";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export const errorHandler: ErrorRequestHandler = (
   err: unknown,
@@ -15,7 +16,18 @@ export const errorHandler: ErrorRequestHandler = (
     });
     return;
   }
-
+  if (err instanceof PrismaClientKnownRequestError) {
+    console.log(err.code);
+    if (err.code === "P2025") {
+      res.status(400).json({
+        error: "Referenced record not found.",
+      });
+    }
+    res.status(500).json({
+      error: "Database Error",
+    });
+  }
+  console.log(err);
   res.status(500).json({
     error: "Internal Server Error",
   });

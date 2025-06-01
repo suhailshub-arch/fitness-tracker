@@ -4,7 +4,9 @@ import { Unauthorized } from "../utils/ApiError.js";
 import { JWT_SECRET } from "../config/index.js";
 
 interface MyJwtPayload extends JwtPayload {
-  userId: string;
+  id: string;
+  iat: number;
+  exp: number;
 }
 
 export const authJWTMiddleware = (
@@ -23,9 +25,9 @@ export const authJWTMiddleware = (
 
   const token = authHeader.split(" ")[1];
   const payload = jwt.verify(token, JWT_SECRET!) as MyJwtPayload;
-
+  console.log(payload);
   req.user = {
-    userId: payload.userId,
+    userId: payload.id,
   };
 
   next();

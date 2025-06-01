@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { query } from "express-validator";
 import { handleValidationErrors } from "../middleware/paramValidation.middleware.js";
+import { createWorkoutController } from "../controllers/workout.controller.js";
 
 const workoutSessionRouter = Router();
 
-workoutSessionRouter.post("/workouts", () => {});
+workoutSessionRouter.post("/", createWorkoutController);
 
 workoutSessionRouter.get(
-  "/workouts",
+  "/",
   [
     query("status")
       .optional()
@@ -29,10 +30,10 @@ workoutSessionRouter.get(
   () => {}
 );
 
-workoutSessionRouter.get("/workouts/:workoutId", () => {});
+workoutSessionRouter.get("/:workoutId", () => {});
 
-workoutSessionRouter.patch("/workouts/:workoutId", () => {});
+workoutSessionRouter.patch("/:workoutId", () => {});
 
-workoutSessionRouter.delete("/workouts/:workoutId", () => {});
+workoutSessionRouter.delete("/:workoutId", () => {});
 
 export default workoutSessionRouter;
