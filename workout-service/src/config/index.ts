@@ -8,3 +8,4 @@ dotenv.config({
 
 export const PORT = process.env.PORT || 3002;
 export const DATABASE_URL = process.env.DATABASE_URL || "";
+export const JWT_SECRET = process.env.JWT_SECRET;
