@@ -7,7 +7,7 @@
     "dev": "tsx --watch src/index.ts",
     "build": "NODE_ENV=production npm run prisma:generate && tsc",
     "start": "NODE_ENV=production node dist/index.js",
-    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:migrate": "dotenv -e .env.development prisma migrate dev --name init",
     "prisma:generate": "prisma generate",
     "test:unit": "jest",
     "test:db": "docker-compose -f docker-compose.test.yml up -d",

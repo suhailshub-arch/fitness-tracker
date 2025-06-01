@@ -10,13 +10,12 @@ app.use(express.json());
 
 // Health check (public)
 app.get("/healthz", async (req: Request, res: Response) => {
-  // try {
-  //   await prisma.$queryRaw`SELECT 1`; // test DB connectivity
-  //   res.status(200).json({ status: "ok", db: "reachable" });
-  // } catch (err) {
-  //   res.status(500).json({ status: "error", db: "unreachable" });
-  // }
-  res.status(200).json({ status: "ok" });
+  try {
+    await prisma.$queryRaw`SELECT 1`; // test DB connectivity
+    res.status(200).json({ status: "ok", db: "reachable" });
+  } catch (err) {
+    res.status(500).json({ status: "error", db: "unreachable" });
+  }
 });
 
 app.use(authJWTMiddleware);

@@ -12,3 +12,73 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+//////////////////////////////////////////
+// 2 Enum for Workout status
+//////////////////////////////////////////
+enum WorkoutStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+//////////////////////////////////////////
+// 3 The “Exercise” catalog
+//////////////////////////////////////////
+model Exercise {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  defaultReps Int?
+  defaultSets Int?
+  workouts    WorkoutExercise[]  // back-relation
+}
+
+//////////////////////////////////////////
+// 4 The “Workout” table
+//////////////////////////////////////////
+model Workout {
+  id          String             @id @default(cuid())
+  userId      String             // stores the UserService’s user id; no DB‐level FK
+  scheduledAt DateTime
+  status      WorkoutStatus      @default(PENDING)
+  exercises   WorkoutExercise[]
+  comments    Comment[]          // back-relation 
+
+  @@index([userId])
+}
+
+//////////////////////////////////////////
+// 5 The junction table: WorkoutExercise
+//////////////////////////////////////////
+model WorkoutExercise {
+  id          String    @id @default(cuid())
+  workout     Workout   @relation(fields: [workoutId], references: [id])
+  workoutId   String
+  exercise    Exercise  @relation(fields: [exerciseId], references: [id])
+  exerciseId  String
+  sequence    Int                     // ordering of this exercise in the session
+  targetReps  Int?
+  targetSets  Int?
+  completed   Boolean   @default(false)
+  actualReps  Int?
+  actualSets  Int?
+  notes       String?
+
+  @@index([workoutId])
+}
+
+//////////////////////////////////////////
+// 6 Comments on a workout
+//////////////////////////////////////////
+model Comment {
+  id         String   @id @default(cuid())
+  workout    Workout  @relation(fields: [workoutId], references: [id])
+  workoutId  String
+  userId     String                   // which user left this comment
+  text       String
+  createdAt  DateTime @default(now())
+
+  @@index([workoutId])
+  @@index([userId])
+}
