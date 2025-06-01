@@ -4,6 +4,10 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { NotFound } from "./utils/ApiError.js";
 import prisma from "./prismaClient.js";
 import { authJWTMiddleware } from "./middleware/auth.middleware.js";
+import workoutSessionRouter from "./routes/workout-sessions.routes.js";
+import commentRouter from "./routes/comments.router.js";
+import summaryRouter from "./routes/summary.router.js";
+import exerciseRouter from "./routes/exercises.router.js";
 
 const app = express();
 app.use(express.json());
@@ -20,9 +24,10 @@ app.get("/healthz", async (req: Request, res: Response) => {
 
 app.use(authJWTMiddleware);
 
-app.get("/protected", (req: Request, res: Response) => {
-  res.status(200).json({ status: "protected" });
-});
+app.use("/workouts/summary", summaryRouter);
+app.use("/workouts/:workoutId/exercises", exerciseRouter);
+app.use("/workouts/:workoutId/comments", commentRouter);
+app.use("/workouts", workoutSessionRouter);
 
 app.use((req: Request, res: Response) => {
   throw NotFound("Page not found");
