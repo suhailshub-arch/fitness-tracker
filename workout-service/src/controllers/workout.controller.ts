@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { createWorkout } from "../services/workout.service.js";
+import { BadRequest } from "../utils/ApiError.js";
 
 export interface IExerciseSlot {
   exerciseId: string;
@@ -19,9 +20,14 @@ export const createWorkoutController = async (
 ) => {
   const userId = req.user!.userId;
   const { scheduledAt, exercises } = req.body;
+  if (!scheduledAt) {
+    throw BadRequest("Request must have Schedule Time");
+  }
   const created = await createWorkout({ userId, scheduledAt, exercises });
   res.status(201).json({
     success: true,
-    data: created,
+    data: {
+      workout: created,
+    },
   });
 };

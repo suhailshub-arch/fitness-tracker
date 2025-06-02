@@ -1,7 +1,7 @@
 services:
   postgres_test:
     image: postgres:15
-    container_name: fitness_user_test_db
+    container_name: fitness_workout_test_db
     restart: always
     env_file:
       - .env.test

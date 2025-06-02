@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { PORT } from "./config/index.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { NotFound } from "./utils/ApiError.js";
-import prisma from "./prismaClient.js";
+import { prisma } from "./prismaClient.js";
 import { authJWTMiddleware } from "./middleware/auth.middleware.js";
 import workoutSessionRouter from "./routes/workout-sessions.routes.js";
 import commentRouter from "./routes/comments.router.js";
