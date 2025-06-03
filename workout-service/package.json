@@ -15,7 +15,7 @@
     "test:db:down": "docker-compose -f docker-compose.test.yml down",
     "test:prepare": "dotenv -e .env.test npx prisma db push",
     "test:unit": "jest",
-    "test:integration": "npm run test:db && npm run test:prepare && jest && npm run test:db:down"
+    "test:integration": "npm run test:db && npm run test:prepare && dotenv -e .env.test jest && npm run test:db:down"
   },
   "prisma": {
     "seed": "npm run db:seed"

@@ -3,6 +3,7 @@ jest.mock("../../src/prismaClient", () => {
     prisma: {
       workout: {
         create: jest.fn(), // prisma.workout.create will be a jest.fn()
+        findMany: jest.fn(),
       },
     },
   };
@@ -11,8 +12,10 @@ jest.mock("../../src/prismaClient", () => {
 import {
   createWorkout,
   CreateWorkoutParams,
-} from "../../src/services/workout.service";
-import { prisma } from "../../src/prismaClient";
+  getWorkouts,
+} from "../../src/services/workout.service.js";
+import { prisma } from "../../src/prismaClient.js";
+import { param } from "express-validator";
 
 describe("createWorkout", () => {
   it("should map 'CreateWorkoutParams' to the correct Prisma call and return its result", async () => {
@@ -154,5 +157,213 @@ describe("createWorkout", () => {
     });
 
     expect(result).toBe(fakeEmptyResult);
+  });
+});
+
+describe("getWorkouts", () => {
+  it("returns all workouts for a user when no filters are provided", async () => {
+    const fakeReturn = [
+      {
+        id: "w1",
+        userId: "1",
+        scheduledAt: new Date("2025-06-01T08:00:00.000Z"),
+        status: "COMPLETED",
+        exercises: [],
+        comments: [],
+      },
+      {
+        id: "w2",
+        userId: "1",
+        scheduledAt: new Date("2025-05-28T14:30:00.000Z"),
+        status: "PENDING",
+        exercises: [],
+        comments: [],
+      },
+    ];
+
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    const params = { userId: "1" };
+    const result = await getWorkouts(params);
+
+    const calledWith = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(calledWith.where).toEqual({ userId: "1" });
+
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("filters by status if provided", async () => {
+    const fakeReturn: any[] = [
+      {
+        id: "w3",
+        userId: "1",
+        scheduledAt: new Date("2025-06-10T10:00:00.000Z"),
+        status: "PENDING",
+        exercises: [],
+        comments: [],
+      },
+    ];
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    const params = { userId: "1", status: "PENDING" };
+    const result = await getWorkouts(params);
+
+    const { where } = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(where).toEqual({
+      userId: "1",
+      status: "PENDING",
+    });
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("filters by start only", async () => {
+    const fakeReturn: any[] = [
+      {
+        id: "w4",
+        userId: "1",
+        scheduledAt: new Date("2025-07-01T12:00:00.000Z"),
+        status: "COMPLETED",
+        exercises: [],
+        comments: [],
+      },
+    ];
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    // Act: user provided only start
+    const params = {
+      userId: "1",
+      start: "2025-07-01T00:00:00.000Z",
+    };
+    const result = await getWorkouts(params);
+
+    // Assert: where should be { userId: "1", scheduledAt: { gte: <Date("2025-07-01T00:00:00.000Z")> } }
+    const { where } = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(where.userId).toBe("1");
+    expect(where.scheduledAt).toEqual({
+      gte: new Date("2025-07-01T00:00:00.000Z"),
+    });
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("filters by end only", async () => {
+    const fakeReturn: any[] = [
+      {
+        id: "w5",
+        userId: "1",
+        scheduledAt: new Date("2025-06-05T09:00:00.000Z"),
+        status: "CANCELLED",
+        exercises: [],
+        comments: [],
+      },
+    ];
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    // Act: user provided only end
+    const params = {
+      userId: "1",
+      end: "2025-06-10T23:59:59.000Z",
+    };
+    const result = await getWorkouts(params);
+
+    // Assert: where should be { userId: "1", scheduledAt: { lte: <Date("2025-06-10T23:59:59.000Z")> } }
+    const { where } = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(where.userId).toBe("1");
+    expect(where.scheduledAt).toEqual({
+      lte: new Date("2025-06-10T23:59:59.000Z"),
+    });
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("filters by both start and end", async () => {
+    const fakeReturn: any[] = [
+      {
+        id: "w6",
+        userId: "1",
+        scheduledAt: new Date("2025-07-05T15:00:00.000Z"),
+        status: "PENDING",
+        exercises: [],
+        comments: [],
+      },
+    ];
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    // Act: user provided both start and end
+    const params = {
+      userId: "1",
+      start: "2025-07-01T00:00:00.000Z",
+      end: "2025-07-10T23:59:59.000Z",
+    };
+    const result = await getWorkouts(params);
+
+    // Assert: where should merge both gte & lte
+    const { where } = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(where.userId).toBe("1");
+    expect(where.scheduledAt).toEqual({
+      gte: new Date("2025-07-01T00:00:00.000Z"),
+      lte: new Date("2025-07-10T23:59:59.000Z"),
+    });
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("filters by status, start, and end all together", async () => {
+    const fakeReturn: any[] = [
+      {
+        id: "w7",
+        userId: "1",
+        scheduledAt: new Date("2025-08-05T10:00:00.000Z"),
+        status: "COMPLETED",
+        exercises: [],
+        comments: [],
+      },
+    ];
+    (prisma.workout.findMany as jest.Mock).mockResolvedValue(fakeReturn);
+
+    // Act: user provided status + both dates
+    const params = {
+      userId: "1",
+      status: "COMPLETED",
+      start: "2025-08-01T00:00:00.000Z",
+      end: "2025-08-31T23:59:59.000Z",
+    };
+    const result = await getWorkouts(params);
+
+    // Assert: where should include all three keys
+    const { where } = (prisma.workout.findMany as jest.Mock).mock.calls[0][0];
+    expect(where).toEqual({
+      userId: "1",
+      status: "COMPLETED",
+      scheduledAt: {
+        gte: new Date("2025-08-01T00:00:00.000Z"),
+        lte: new Date("2025-08-31T23:59:59.000Z"),
+      },
+    });
+    expect(result).toBe(fakeReturn);
+  });
+
+  it("throws if start is not a valid date", async () => {
+    // Arrange: we expect an exception before calling Prisma at all
+    const params = {
+      userId: "1",
+      start: "not-a-date",
+    };
+
+    // Act & Assert: calling getWorkouts should reject with our error
+    await expect(getWorkouts(params)).rejects.toThrow(
+      "`start` is not a valid date"
+    );
+
+    // Ensure that Prisma was never called
+    expect(prisma.workout.findMany as jest.Mock).not.toHaveBeenCalled();
+  });
+
+  it("throws if end is not a valid date", async () => {
+    const params = {
+      userId: "1",
+      end: "2025-13-99T99:99:99.000Z", // definitely invalid
+    };
+    await expect(getWorkouts(params)).rejects.toThrow(
+      "`end` is not a valid date"
+    );
+    expect(prisma.workout.findMany as jest.Mock).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,9 @@
 import request from "supertest";
 import express, { NextFunction, Request, Response, Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import { errorHandler } from "../../src/middleware/errorHandler";
-import { exerciseSeedData } from "../../prisma/data/exercises";
-import workoutSessionRouter from "../../src/routes/workout-sessions.routes";
+import { errorHandler } from "../../src/middleware/errorHandler.js";
+import { exerciseSeedData } from "../../prisma/data/exercises.js";
+import workoutSessionRouter from "../../src/routes/workout-sessions.routes.js";
 import { execSync } from "child_process";
 
 // Extend Express Request interface for 'user' property

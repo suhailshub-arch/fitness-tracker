@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { query } from "express-validator";
 import { handleValidationErrors } from "../middleware/paramValidation.middleware.js";
-import { createWorkoutController } from "../controllers/workout.controller.js";
+import {
+  createWorkoutController,
+  getAllWorkoutController,
+} from "../controllers/workout.controller.js";
 
 const workoutSessionRouter = Router();
 
@@ -27,7 +30,7 @@ workoutSessionRouter.get(
       .escape(),
     handleValidationErrors,
   ],
-  () => {}
+  getAllWorkoutController
 );
 
 workoutSessionRouter.get("/:workoutId", () => {});

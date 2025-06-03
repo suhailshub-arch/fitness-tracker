@@ -1,4 +1,4 @@
-import { registerUser, loginUser } from "../../src/services/userService";
+import { registerUser, loginUser } from "../../src/services/userService.js";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
