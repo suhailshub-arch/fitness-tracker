@@ -1,6 +1,10 @@
 import { prisma } from "../prismaClient.js";
-import { IExerciseSlot } from "../controllers/workout.controller.js";
+import {
+  IExerciseSlot,
+  IWorkoutUpdateBody,
+} from "../controllers/workout.controller.js";
 import { BadRequest, NotFound } from "../utils/ApiError.js";
+import { WorkoutStatus } from "@prisma/client";
 
 export interface CreateWorkoutParams {
   userId: string;
@@ -13,6 +17,18 @@ export interface GetWorkoutParams {
   status?: string;
   start?: string;
   end?: string;
+}
+
+export interface UpdateWorkoutParams {
+  userId: string;
+  workoutId: string;
+  scheduledAt?: string;
+  status?: WorkoutStatus;
+  exercises?: {
+    exerciseId: string;
+    targetReps?: number;
+    targetSets?: number;
+  }[];
 }
 
 export const createWorkout = async (params: CreateWorkoutParams) => {
@@ -107,4 +123,54 @@ export const getWorkout = async (params: {
     throw NotFound("Workout not found");
   }
   return workout;
+};
+
+export const updateWorkout = async (params: UpdateWorkoutParams) => {
+  const { userId, workoutId, scheduledAt, status, exercises } = params;
+
+  const existing = await prisma.workout.findUnique({
+    where: { userId, id: workoutId },
+    select: { id: true },
+  });
+  if (!existing) {
+    throw NotFound("Workout not found");
+  }
+
+  const dataToUpdate: any = {};
+
+  if (scheduledAt) {
+    const parsed = new Date(scheduledAt);
+    if (isNaN(parsed.getTime())) {
+      throw BadRequest("`scheduledAt` must be a valid ISO-8601 date");
+    }
+    dataToUpdate.scheduledAt = parsed;
+  }
+
+  if (status) {
+    dataToUpdate.status = status;
+  }
+
+  if (exercises) {
+    const nested = exercises.map((slot, idx) => ({
+      exercise: { connect: { id: slot.exerciseId } },
+      sequence: idx + 1,
+      targetReps: slot.targetReps ?? undefined,
+      targetSets: slot.targetSets ?? undefined,
+    }));
+
+    dataToUpdate.exercises = {
+      deleteMany: {},
+      create: nested,
+    };
+  }
+  const updated = await prisma.workout.update({
+    where: { id: workoutId, userId },
+    data: dataToUpdate,
+    include: {
+      exercises: { include: { exercise: true }, orderBy: { sequence: "asc" } },
+      comments: true,
+    },
+  });
+
+  return updated;
 };

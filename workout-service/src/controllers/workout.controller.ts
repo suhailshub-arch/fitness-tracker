@@ -1,5 +1,12 @@
-import { NextFunction, Request, Response } from "express";
-import { createWorkout, getWorkout, getWorkouts } from "../services/workout.service.js";
+// src/controllers/workout.controller.ts
+import { NextFunction, Request, RequestHandler, Response } from "express";
+import {
+  createWorkout,
+  getWorkout,
+  getWorkouts,
+  updateWorkout,
+  UpdateWorkoutParams,
+} from "../services/workout.service.js";
 import { BadRequest } from "../utils/ApiError.js";
 import { ParsedQs } from "qs";
 
@@ -18,6 +25,16 @@ interface IQueryParams extends ParsedQs {
   status?: "pending" | "completed" | undefined;
   start?: string;
   end?: string;
+}
+
+export interface IWorkoutUpdateBody {
+  scheduledAt?: string;
+  exercises?: {
+    exerciseId: string;
+    targetReps?: number;
+    targetSets?: number;
+  }[];
+  status?: "PENDING" | "COMPLETED" | "CANCELLED";
 }
 
 function getQueryString(value: unknown): string | undefined {
@@ -61,7 +78,7 @@ export const getAllWorkoutController = async (
 };
 
 export const getSingleWorkoutController = async (
-  req: Request,
+  req: Request<{ workoutId: string }>,
   res: Response
 ) => {
   const userId = req.user!.userId;
@@ -71,5 +88,28 @@ export const getSingleWorkoutController = async (
   res.status(200).json({
     success: true,
     data: { workout },
+  });
+};
+
+export const updateWorkoutController = async (
+  req: Request<{ workoutId: string }, {}, IWorkoutUpdateBody>,
+  res: Response
+) => {
+  const userId = req.user!.userId;
+  const workoutId = req.params.workoutId;
+  const { scheduledAt, status, exercises } = req.body;
+
+  const params: UpdateWorkoutParams = {
+    userId,
+    workoutId,
+    ...(scheduledAt !== undefined && { scheduledAt }),
+    ...(status !== undefined && { status }),
+    ...(exercises !== undefined && { exercises }),
+  };
+
+  const updated = await updateWorkout(params);
+  res.status(200).json({
+    success: true,
+    data: { workout: updated },
   });
 };

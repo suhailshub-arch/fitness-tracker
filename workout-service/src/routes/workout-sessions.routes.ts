@@ -5,6 +5,7 @@ import {
   createWorkoutController,
   getAllWorkoutController,
   getSingleWorkoutController,
+  updateWorkoutController,
 } from "../controllers/workout.controller.js";
 
 const workoutSessionRouter = Router();
@@ -36,7 +37,7 @@ workoutSessionRouter.get(
 
 workoutSessionRouter.get("/:workoutId", getSingleWorkoutController);
 
-workoutSessionRouter.patch("/:workoutId", () => {});
+workoutSessionRouter.patch("/:workoutId", updateWorkoutController);
 
 workoutSessionRouter.delete("/:workoutId", () => {});
 

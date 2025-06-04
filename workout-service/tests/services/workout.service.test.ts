@@ -5,6 +5,7 @@ jest.mock("../../src/prismaClient", () => {
         create: jest.fn(),
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        update: jest.fn(),
       },
     },
   };
@@ -15,6 +16,8 @@ import {
   CreateWorkoutParams,
   getWorkouts,
   getWorkout,
+  updateWorkout,
+  UpdateWorkoutParams,
 } from "../../src/services/workout.service.js";
 import { prisma } from "../../src/prismaClient.js";
 import { param } from "express-validator";
@@ -393,5 +396,168 @@ describe("get workout by Id", () => {
     await expect(
       getWorkout({ userId: "1", workoutId: "fake-id" })
     ).rejects.toThrow("Workout not found");
+  });
+});
+
+describe("updateWorkout service", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("successfully updates scheduledAt and nested exercises when workout exists", async () => {
+    // Arrange
+    const userId = "user‐123";
+    const workoutId = "wk‐abc";
+    const updateParams: UpdateWorkoutParams = {
+      userId,
+      workoutId,
+      scheduledAt: "2025-07-01T10:00:00.000Z",
+      status: "PENDING",
+      exercises: [
+        { exerciseId: "ex‐1", targetReps: 12, targetSets: 3 },
+        { exerciseId: "ex‐2", targetReps: 10, targetSets: 4 },
+      ],
+    };
+
+    // 1) Simulate that workout.findUnique succeeds (i.e. the workout exists)
+    (prisma.workout.findUnique as jest.Mock).mockResolvedValue({
+      id: workoutId,
+    } as any);
+
+    // 2) Simulate that workout.update returns an “updated” object
+    const fakeUpdatedWorkout = {
+      id: workoutId,
+      userId,
+      scheduledAt: new Date("2025-07-01T10:00:00.000Z"),
+      status: "PENDING",
+      exercises: [
+        {
+          id: "we‐100",
+          workoutId,
+          exerciseId: "ex‐1",
+          sequence: 1,
+          targetReps: 12,
+          targetSets: 3,
+          completed: false,
+          actualReps: null,
+          actualSets: null,
+          notes: null,
+          exercise: {
+            id: "ex‐1",
+            name: "Push-up",
+            description: "",
+            defaultReps: 15,
+            defaultSets: 3,
+          },
+        },
+        {
+          id: "we‐101",
+          workoutId,
+          exerciseId: "ex‐2",
+          sequence: 2,
+          targetReps: 10,
+          targetSets: 4,
+          completed: false,
+          actualReps: null,
+          actualSets: null,
+          notes: null,
+          exercise: {
+            id: "ex‐2",
+            name: "Squat",
+            description: "",
+            defaultReps: 12,
+            defaultSets: 4,
+          },
+        },
+      ],
+      comments: [],
+    };
+    (prisma.workout.update as jest.Mock).mockResolvedValue(
+      fakeUpdatedWorkout as any
+    );
+
+    // Act
+    const result = await updateWorkout(updateParams);
+
+    // Assert
+    expect(prisma.workout.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.workout.findUnique).toHaveBeenCalledWith({
+      where: { id: workoutId, userId },
+      select: { id: true },
+    });
+
+    // Check that the “data” object passed into Prisma matches what we expect:
+    expect(prisma.workout.update).toHaveBeenCalledTimes(1);
+    const updateCallArgs = (prisma.workout.update as jest.Mock).mock
+      .calls[0][0];
+    expect(updateCallArgs.where).toEqual({ id: workoutId, userId });
+
+    // scheduledAt should have been converted to a Date
+    expect(updateCallArgs.data.scheduledAt).toBeInstanceOf(Date);
+    expect((updateCallArgs.data.scheduledAt as Date).toISOString()).toBe(
+      "2025-07-01T10:00:00.000Z"
+    );
+
+    // status should be passed through
+    expect(updateCallArgs.data.status).toBe("PENDING");
+
+    // Nested exercises: first deleteMany, then create an array of two items with the proper “sequence”
+    expect(updateCallArgs.data.exercises).toEqual({
+      deleteMany: {},
+      create: [
+        {
+          exercise: { connect: { id: "ex‐1" } },
+          sequence: 1,
+          targetReps: 12,
+          targetSets: 3,
+        },
+        {
+          exercise: { connect: { id: "ex‐2" } },
+          sequence: 2,
+          targetReps: 10,
+          targetSets: 4,
+        },
+      ],
+    });
+
+    // And the returned result should be exactly our fakeUpdatedWorkout
+    expect(result).toBe(fakeUpdatedWorkout);
+  });
+
+  it("throws NotFound if the workout does not exist or belongs to a different user", async () => {
+    // Arrange
+    const userId = "user‐123";
+    const workoutId = "wk‐missing";
+    (prisma.workout.findUnique as jest.Mock).mockResolvedValue(null);
+
+    // Act & Assert
+    await expect(updateWorkout({ userId, workoutId })).rejects.toThrow(
+      "Workout not found"
+    );
+
+    // Prisma.update should never be called if findUnique returned null
+    expect(prisma.workout.update).not.toHaveBeenCalled();
+  });
+
+  it("throws ApiError(400) if scheduledAt is not a valid ISO date", async () => {
+    // Arrange: findUnique must return something so we get past the “not found” check
+    const userId = "user‐123";
+    const workoutId = "wk‐abc";
+    (prisma.workout.findUnique as jest.Mock).mockResolvedValue({
+      id: workoutId,
+    } as any);
+
+    // Give an invalid date string:
+    const badParams: UpdateWorkoutParams = {
+      userId,
+      workoutId,
+      scheduledAt: "not‐a‐date",
+    };
+
+    // Act & Assert
+    await expect(updateWorkout(badParams)).rejects.toThrow(
+      "`scheduledAt` must be a valid ISO-8601 date"
+    );
+    expect(prisma.workout.update).not.toHaveBeenCalled();
   });
 });
