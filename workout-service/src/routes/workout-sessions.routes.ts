@@ -4,6 +4,7 @@ import { handleValidationErrors } from "../middleware/paramValidation.middleware
 import {
   createWorkoutController,
   getAllWorkoutController,
+  getSingleWorkoutController,
 } from "../controllers/workout.controller.js";
 
 const workoutSessionRouter = Router();
@@ -33,7 +34,7 @@ workoutSessionRouter.get(
   getAllWorkoutController
 );
 
-workoutSessionRouter.get("/:workoutId", () => {});
+workoutSessionRouter.get("/:workoutId", getSingleWorkoutController);
 
 workoutSessionRouter.patch("/:workoutId", () => {});
 

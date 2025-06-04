@@ -2,8 +2,9 @@ jest.mock("../../src/prismaClient", () => {
   return {
     prisma: {
       workout: {
-        create: jest.fn(), // prisma.workout.create will be a jest.fn()
+        create: jest.fn(),
         findMany: jest.fn(),
+        findUnique: jest.fn(),
       },
     },
   };
@@ -13,6 +14,7 @@ import {
   createWorkout,
   CreateWorkoutParams,
   getWorkouts,
+  getWorkout,
 } from "../../src/services/workout.service.js";
 import { prisma } from "../../src/prismaClient.js";
 import { param } from "express-validator";
@@ -365,5 +367,31 @@ describe("getWorkouts", () => {
       "`end` is not a valid date"
     );
     expect(prisma.workout.findMany as jest.Mock).not.toHaveBeenCalled();
+  });
+});
+
+describe("get workout by Id", () => {
+  it("returns single workout for a user based on workout id provided", async () => {
+    const fakeResult = {
+      id: "1",
+      userId: "u1",
+      scheduledAt: new Date("2025-06-01T08:00:00.000Z"),
+      status: "COMPLETED",
+      exercises: [],
+      comments: [],
+    };
+
+    (prisma.workout.findUnique as jest.Mock).mockResolvedValue(fakeResult);
+    const res = await getWorkout({ userId: "u1", workoutId: "1" });
+
+    expect(res).toEqual(fakeResult);
+  });
+
+  it("throws error when record is not found", async () => {
+    (prisma.workout.findUnique as jest.Mock).mockResolvedValue(null);
+
+    await expect(
+      getWorkout({ userId: "1", workoutId: "fake-id" })
+    ).rejects.toThrow("Workout not found");
   });
 });

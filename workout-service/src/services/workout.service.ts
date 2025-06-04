@@ -1,6 +1,6 @@
 import { prisma } from "../prismaClient.js";
 import { IExerciseSlot } from "../controllers/workout.controller.js";
-import { BadRequest } from "../utils/ApiError.js";
+import { BadRequest, NotFound } from "../utils/ApiError.js";
 
 export interface CreateWorkoutParams {
   userId: string;
@@ -90,4 +90,21 @@ export const getWorkouts = async (params: GetWorkoutParams) => {
     },
   });
   return workouts;
+};
+
+export const getWorkout = async (params: {
+  userId: string;
+  workoutId: string;
+}) => {
+  const { userId, workoutId } = params;
+  const workout = await prisma.workout.findUnique({
+    where: {
+      userId,
+      id: workoutId,
+    },
+  });
+  if (!workout) {
+    throw NotFound("Workout not found");
+  }
+  return workout;
 };

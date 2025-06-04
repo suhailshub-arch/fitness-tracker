@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { createWorkout, getWorkouts } from "../services/workout.service.js";
+import { createWorkout, getWorkout, getWorkouts } from "../services/workout.service.js";
 import { BadRequest } from "../utils/ApiError.js";
 import { ParsedQs } from "qs";
 
@@ -57,5 +57,19 @@ export const getAllWorkoutController = async (
   res.status(200).json({
     success: true,
     data: { workouts },
+  });
+};
+
+export const getSingleWorkoutController = async (
+  req: Request,
+  res: Response
+) => {
+  const userId = req.user!.userId;
+  const { workoutId } = req.params;
+
+  const workout = await getWorkout({ userId, workoutId });
+  res.status(200).json({
+    success: true,
+    data: { workout },
   });
 };

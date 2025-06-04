@@ -372,3 +372,41 @@ describe("GET /workouts (integration)", () => {
     });
   });
 });
+
+describe("GET /workouts/:workoutId (integration", () => {
+  it("returns the correct workout", async () => {
+    const workout = await prisma.workout.findFirst({
+      where: { userId: "test-user" },
+    });
+    const w1 = workout?.id;
+    const res = await request(app).get(`/workouts/${w1}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success", true);
+    expect(res.body).toHaveProperty("data");
+    expect(res.body.data.workout).toEqual({
+      id: workout?.id,
+      userId: workout?.userId,
+      scheduledAt: workout?.scheduledAt.toISOString(),
+      status: workout?.status,
+    });
+  });
+
+  it("throws 404 if correct workoutId but not belonged to this user", async () => {
+    const badWorkout = await prisma.workout.findFirst({
+      where: { userId: "other-user" },
+    });
+
+    const badWorkoutId = badWorkout?.id;
+    const res = await request(app).get(`/workouts/${badWorkoutId}`);
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe("Workout not found");
+  });
+
+  it("throws 404 if cant find workout", async () => {
+    const res = await request(app).get("/workouts/bad-workout-id");
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe("Workout not found");
+  });
+});
