@@ -410,3 +410,88 @@ describe("GET /workouts/:workoutId (integration", () => {
     expect(res.body.error).toBe("Workout not found");
   });
 });
+
+describe("PATCH /workouts/:workoutId (integration", () => {
+  it("update scheduleAt and rplaces the exercise list", async () => {
+    const existingWorkout = await prisma.workout.findFirst({
+      where: { userId: "test-user" },
+      include: { exercises: true },
+    });
+
+    expect(existingWorkout).not.toBeNull();
+    const workoutId = existingWorkout!.id;
+
+    const allExercises = await prisma.exercise.findMany({
+      select: { id: true },
+    });
+    const [ex1, ex2, ex3] = allExercises.map((e) => e.id);
+    // We’ll replace the old pair with [ex3, ex1]
+
+    // 3) Build a new date and body
+    const newDate = "2025-07-01T10:00:00.000Z";
+    const patchBody = {
+      scheduledAt: newDate,
+      exercises: [
+        { exerciseId: ex3, targetReps: 20, targetSets: 5 },
+        { exerciseId: ex1, targetReps: 15, targetSets: 3 },
+      ],
+    };
+
+    // 4) Call PATCH
+    const res = await request(app)
+      .patch(`/workouts/${workoutId}`)
+      .send(patchBody);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("success", true);
+    expect(res.body).toHaveProperty("data.workout");
+
+    const updated = res.body.data.workout;
+    expect(updated.id).toBe(workoutId);
+    expect(updated.userId).toBe("test-user");
+    expect(updated.scheduledAt).toBe(newDate);
+    expect(updated.exercises.length).toBe(2);
+
+    expect(updated.exercises[0]).toMatchObject({
+      exerciseId: ex3,
+      sequence: 1,
+      targetReps: 20,
+      targetSets: 5,
+    });
+    expect(updated.exercises[1]).toMatchObject({
+      exerciseId: ex1,
+      sequence: 2,
+      targetReps: 15,
+      targetSets: 3,
+    });
+
+    const dbCheck = await prisma.workout.findUnique({
+      where: { id: workoutId },
+      include: { exercises: { orderBy: { sequence: "asc" } } },
+    });
+    expect(dbCheck!.scheduledAt.toISOString()).toBe(newDate);
+    expect(dbCheck!.exercises.length).toBe(2);
+    expect(dbCheck!.exercises[0].exerciseId).toBe(ex3);
+    expect(dbCheck!.exercises[1].exerciseId).toBe(ex1);
+  });
+
+  it("returns 404 when workout belongs to another user", async () => {
+    const existingWorkout = await prisma.workout.findFirst({
+      where: { userId: "test-user" },
+    });
+    expect(existingWorkout).not.toBeNull();
+    const workoutId = existingWorkout!.id;
+
+    await prisma.workout.update({
+      where: { id: workoutId },
+      data: { userId: "some-other-user" },
+    });
+
+    const patchBody = { scheduledAt: "2025-07-01T10:00:00.000Z" };
+    const res = await request(app)
+      .patch(`/workouts/${workoutId}`)
+      .send(patchBody);
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: "Workout not found" });
+  });
+});
