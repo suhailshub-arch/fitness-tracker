@@ -2,6 +2,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   createWorkout,
+  deleteWorkout,
   getWorkout,
   getWorkouts,
   updateWorkout,
@@ -111,5 +112,19 @@ export const updateWorkoutController = async (
   res.status(200).json({
     success: true,
     data: { workout: updated },
+  });
+};
+
+export const deleteWorkoutController = async (
+  req: Request<{ workoutId: string }>,
+  res: Response
+) => {
+  const userId = req.user!.userId;
+  const workoutId = req.params.workoutId;
+
+  const deleted = await deleteWorkout({ workoutId, userId });
+  res.status(200).json({
+    success: true,
+    data: { workout: deleted },
   });
 };

@@ -18,7 +18,7 @@ export const errorHandler: ErrorRequestHandler = (
   }
   if (err instanceof PrismaClientKnownRequestError) {
     if (err.code === "P2025") {
-      res.status(400).json({
+      res.status(404).json({
         error: "Referenced record not found.",
       });
     }

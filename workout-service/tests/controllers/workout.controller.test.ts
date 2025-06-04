@@ -178,7 +178,7 @@ describe("POST /workouts (integration)", () => {
       ],
     };
     const res = await request(app).post("/workouts").send(payload);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(404);
     expect(res.body.error).toMatch(/referenced record not found/i);
   });
 

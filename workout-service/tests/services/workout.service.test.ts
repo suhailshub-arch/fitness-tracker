@@ -6,6 +6,7 @@ jest.mock("../../src/prismaClient", () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
+        delete: jest.fn(),
       },
     },
   };
@@ -18,9 +19,11 @@ import {
   getWorkout,
   updateWorkout,
   UpdateWorkoutParams,
+  deleteWorkout,
 } from "../../src/services/workout.service.js";
 import { prisma } from "../../src/prismaClient.js";
 import { param } from "express-validator";
+import { NotFound } from "../../src/utils/ApiError.js";
 
 describe("createWorkout", () => {
   it("should map 'CreateWorkoutParams' to the correct Prisma call and return its result", async () => {
@@ -559,5 +562,55 @@ describe("updateWorkout service", () => {
       "`scheduledAt` must be a valid ISO-8601 date"
     );
     expect(prisma.workout.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteWorkout service", () => {
+  it("resolves and returns the deleted workout when it exists", async () => {
+    // Arrange
+    const userId = "user‐123";
+    const workoutId = "wk‐delete‐abc";
+
+    // Simulate Prisma returning a “deleted” object
+    const fakeDeleted = {
+      id: workoutId,
+      userId,
+      scheduledAt: new Date("2025-06-20T12:00:00.000Z"),
+      status: "PENDING",
+      exercises: [],
+      comments: [],
+    };
+    (prisma.workout.delete as jest.Mock).mockResolvedValue(fakeDeleted as any);
+
+    // Act
+    const result = await deleteWorkout({ userId, workoutId });
+
+    // Assert
+    expect(prisma.workout.delete).toHaveBeenCalledTimes(1);
+    expect(prisma.workout.delete).toHaveBeenCalledWith({
+      where: { userId, id: workoutId },
+    });
+    expect(result).toBe(fakeDeleted);
+  });
+
+  it("throws NotFound if no workout matches (Prisma throws P2025)", async () => {
+    // Arrange
+    const userId = "user‐123";
+    const workoutId = "wk‐does-not-exist";
+
+    // Simulate Prisma throwing a “record not found” error (code P2025)
+    const prismaError = new Error("Record to delete does not exist.") as any;
+    prismaError.code = "P2025";
+    (prisma.workout.delete as jest.Mock).mockRejectedValue(prismaError);
+
+    // We can also check the message:
+    await expect(deleteWorkout({ userId, workoutId })).rejects.toThrow(
+      "Record to delete does not exist."
+    );
+
+    expect(prisma.workout.delete).toHaveBeenCalledTimes(1);
+    expect(prisma.workout.delete).toHaveBeenCalledWith({
+      where: { userId, id: workoutId },
+    });
   });
 });

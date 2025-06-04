@@ -3,6 +3,7 @@ import { query } from "express-validator";
 import { handleValidationErrors } from "../middleware/paramValidation.middleware.js";
 import {
   createWorkoutController,
+  deleteWorkoutController,
   getAllWorkoutController,
   getSingleWorkoutController,
   updateWorkoutController,
@@ -39,6 +40,6 @@ workoutSessionRouter.get("/:workoutId", getSingleWorkoutController);
 
 workoutSessionRouter.patch("/:workoutId", updateWorkoutController);
 
-workoutSessionRouter.delete("/:workoutId", () => {});
+workoutSessionRouter.delete("/:workoutId", deleteWorkoutController);
 
 export default workoutSessionRouter;

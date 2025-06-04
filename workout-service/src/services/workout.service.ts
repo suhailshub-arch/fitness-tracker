@@ -174,3 +174,20 @@ export const updateWorkout = async (params: UpdateWorkoutParams) => {
 
   return updated;
 };
+
+export const deleteWorkout = async (params: {
+  workoutId: string;
+  userId: string;
+}) => {
+  const { userId, workoutId } = params;
+  const workout = await prisma.workout.delete({
+    where: {
+      userId,
+      id: workoutId,
+    },
+  });
+  if (!workout) {
+    throw NotFound("Workout not found");
+  }
+  return workout;
+};
