@@ -119,9 +119,6 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
-  execSync("docker-compose -f docker-compose.test.yml down", {
-    stdio: "inherit",
-  });
 });
 
 describe("POST /workouts (integration)", () => {

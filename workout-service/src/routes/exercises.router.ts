@@ -4,7 +4,7 @@ import { markExerciseStatusController } from "../controllers/exercises.controlle
 const exerciseRouter = Router({ mergeParams: true });
 
 exerciseRouter.patch(
-  "/workouts/:workoutId/exercises/:exerciseEntryId",
+  "/:exerciseEntryId",
   markExerciseStatusController
 );
 
