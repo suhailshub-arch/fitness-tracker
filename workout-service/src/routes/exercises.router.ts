@@ -1,5 +1,11 @@
 import { Router } from "express";
+import { markExerciseStatusController } from "../controllers/exercises.controller.js";
 
 const exerciseRouter = Router({ mergeParams: true });
+
+exerciseRouter.patch(
+  "/workouts/:workoutId/exercises/:exerciseEntryId",
+  markExerciseStatusController
+);
 
 export default exerciseRouter;

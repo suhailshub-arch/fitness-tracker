@@ -1,5 +1,5 @@
 // src/controllers/workout.controller.ts
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { Request, Response } from "express";
 import {
   createWorkout,
   deleteWorkout,
