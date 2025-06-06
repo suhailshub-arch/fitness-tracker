@@ -76,7 +76,7 @@ This project helped me practice microservices architecture, containerized deploy
 │ └── .env.production
 └── README.md
 
-````
+```
 
 ---
 
@@ -86,7 +86,7 @@ This project helped me practice microservices architecture, containerized deploy
    ```bash
    git clone https://github.com/suhailshub-arch/workout-tracker.git
    cd workout-tracker
-````
+``
 
 2. **Add `.env.production` files**  
    Copy or create the following in each service folder:
