@@ -233,5 +233,3 @@ Each service has Jest + Supertest tests. To run a service’s tests:
 ---
 
 Feel free to browse the code, tweak endpoints, or add new features. This was a personal project to learn microservices, Docker, and Prisma!
-
-```
