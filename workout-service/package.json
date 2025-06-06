@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run db:seed && tsx --watch src/index.ts",
-    "build": "npm run prisma:generate && tsc",
+    "build": "npm run prisma:generate && tsc --build tsconfig.build.json",
     "start": "NODE_ENV=production node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",

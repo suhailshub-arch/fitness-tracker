@@ -24,10 +24,10 @@ app.get("/healthz", async (req: Request, res: Response) => {
 
 app.use(authJWTMiddleware);
 
-app.use("/workouts/summary", summaryRouter);
-app.use("/workouts/:workoutId/exercises", exerciseRouter);
-app.use("/workouts/:workoutId/comments", commentRouter);
-app.use("/workouts", workoutSessionRouter);
+app.use("/api/workouts/summary", summaryRouter);
+app.use("/api/workouts/:workoutId/exercises", exerciseRouter);
+app.use("/api/workouts/:workoutId/comments", commentRouter);
+app.use("/api/workouts", workoutSessionRouter);
 
 app.use((req: Request, res: Response) => {
   throw NotFound("Page not found");

@@ -18,7 +18,6 @@ export async function registerUser(
   // (2) uniqueness check, (3) hash, (4) create, (5) sign JWT
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw Conflict("Email already in use");
-
   const hashedPassword = await hash(password, BCRYPT_SALT_ROUND);
   const user = await prisma.user.create({
     data: {

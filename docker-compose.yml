@@ -8,8 +8,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgreesql/data
+      - db-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - backend
 
   user-service:
     build:
@@ -24,5 +26,43 @@ services:
       - db
     ports:
       - "3001:3001"
+    networks:
+      - backend
+
+  workout-service:
+    build:
+      context: ./workout-service
+    container_name: workout_service
+    restart: always
+    env_file:
+      - ./workout-service/.env.production
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+    ports:
+      - "3002:3002"
+    networks:
+      - backend
+
+  nginx-proxy:
+    image: nginx:1.23-alpine
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/mime.types:/etc/nginx/mime.types:ro
+    depends_on:
+      - user-service
+      - workout-service
+    networks:
+      - backend
+
 volumes:
   db-data:
+
+networks:
+  backend:
+    driver: bridge

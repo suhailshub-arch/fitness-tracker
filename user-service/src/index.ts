@@ -2,12 +2,19 @@ import express, { Request, Response } from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.js";
 import { PORT } from "./config/index.js";
+import prisma from "./prismaClient.js";
 
 const app = express();
 app.use(express.json());
 
-app.get("/health", (req: Request, res: Response) => {
-  res.status(200).json({ status: "ok" });
+// Health check (public)
+app.get("/healthz", async (req: Request, res: Response) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`; // test DB connectivity
+    res.status(200).json({ status: "ok", db: "reachable" });
+  } catch (err) {
+    res.status(500).json({ status: "error", db: "unreachable" });
+  }
 });
 
 app.use('/api/auth', authRouter);

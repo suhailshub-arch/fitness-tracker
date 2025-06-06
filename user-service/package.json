@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/index.ts",
-    "build": "cross-env NODE_ENV=production npm run prisma:generate && tsc",
+    "build": "cross-env NODE_ENV=production npm run prisma:generate && tsc --build tsconfig.build.json",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:generate": "prisma generate",

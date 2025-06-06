@@ -17,6 +17,7 @@ export async function registerController(req: Request, res: Response) {
   const { email, password, name } = req.body as RegisterBody;
   validateEmailPassword(email, password);
   const { user, token } = await userService.registerUser(email, password, name);
+  console.log("Posted to database");
   res.status(201).json({
     success: true,
     data: { user, token },
