@@ -25,6 +25,7 @@ export const errorHandler: ErrorRequestHandler = (
     res.status(500).json({
       error: "Database Error",
     });
+    console.error(err.code);
   }
   res.status(500).json({
     error: "Internal Server Error",

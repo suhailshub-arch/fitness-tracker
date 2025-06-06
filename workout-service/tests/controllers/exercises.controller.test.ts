@@ -4,7 +4,6 @@ import express, { NextFunction, Request, Response } from "express";
 import exerciseRouter from "../../src/routes/exercises.router.js";
 import { errorHandler } from "../../src/middleware/errorHandler.js";
 import { exerciseSeedData } from "../../prisma/data/exercises.js";
-import { execSync } from "child_process";
 
 declare global {
   namespace Express {

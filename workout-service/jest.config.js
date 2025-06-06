@@ -11,7 +11,7 @@ export default {
   testMatch: [
     // any .test.ts or .spec.ts files
     // "**/?(*.)+(spec|test).+(ts|js)",
-    "**/exercises.controller.test.ts",
+    "**/comment.service.test.ts",
   ],
   moduleNameMapper: {
     // strip the ".js" off any relative import before resolving
