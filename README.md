@@ -1,6 +1,3 @@
-Thought for a second
-
-```markdown
 # Workout Tracker Microservices
 
 A small two-service workout tracker app built to experiment with microservices, Docker, and Prisma. It includes:
@@ -236,7 +233,5 @@ Each service has Jest + Supertest tests. To run a service’s tests:
 ---
 
 Feel free to browse the code, tweak endpoints, or add new features. This was a personal project to learn microservices, Docker, and Prisma!
-
-```
 
 ```
