@@ -12,8 +12,7 @@ export const postCommentController = async (
 ) => {
   const userId = req.user!.userId;
   const { text } = req.body;
-  const workoutId = req.params.toString();
-
+  const { workoutId } = req.params;
   const posted = await postCommentService({ text, userId, workoutId });
   res.status(201).json({
     success: true,
